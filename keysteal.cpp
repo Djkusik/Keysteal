@@ -355,64 +355,64 @@ void CheckNumpad(char* str, bool numlock, bool shortcut) {
 
 void CheckSpecialChar(char* str) {
 //Same situation - function now available, map too big
-    if (str[0] == *"1") {
+    if (str[0] == '1') {
         str[0] = '!';
     }
-    else if (str[0] == *"2") {
+    else if (str[0] == '2') {
         str[0] = '@';
     }
-    else if (str[0] == *"3") {
+    else if (str[0] == '3') {
         str[0] = '#';
     }
-    else if (str[0] == *"4") {
+    else if (str[0] == '4') {
         str[0] = '$';
     }
-    else if (str[0] == *"5") {
+    else if (str[0] == '5') {
         str[0] = '%';
     }
-    else if (str[0] == *"6") {
+    else if (str[0] == '6') {
         str[0] = '^';
     }
-    else if (str[0] == *"7") {
+    else if (str[0] == '7') {
         str[0] = '&';
     }
-    else if (str[0] == *"8") {
+    else if (str[0] == '8') {
         str[0] = '*';
     }
-    else if (str[0] == *"9") {
+    else if (str[0] == '9') {
         str[0] = '(';
     }
-    else if (str[0] == *"0") {
+    else if (str[0] == '0') {
         str[0] = ')';
     }
-    else if (str[0] == *"-") {
+    else if (str[0] == '-') {
         str[0] = '_';
     }
-    else if (str[0] == *"=") {
+    else if (str[0] == '=') {
         str[0] = '+';
     }
-    else if (str[0] == *"[") {
+    else if (str[0] == '[') {
         str[0] = '{';
     }
-    else if (str[0] == *"]") {
+    else if (str[0] == ']') {
         str[0] = '}';
     }
-    else if (str[0] == *"\\") {
+    else if (str[0] == '\\') {
         str[0] = '|';
     }
-    else if (str[0] == *";") {
+    else if (str[0] == ';') {
         str[0] = ':';
     }
-    else if (str[0] == *"'") {
+    else if (str[0] == '\'') {
         str[0] = '"';
     }
-    else if (str[0] == *",") {
+    else if (str[0] == ',') {
         str[0] = '<';
     }
-    else if (str[0] == *".") {
+    else if (str[0] == '.') {
         str[0] = '>';
     }
-    else if (str[0] == *"/") {
+    else if (str[0] == '/') {
         str[0] = '?';
     }
 }

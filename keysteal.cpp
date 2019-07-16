@@ -1,3 +1,7 @@
+//Win Macros
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+
 //Win Headers
 #include <windows.h>
 #include <winuser.h>
@@ -5,7 +9,7 @@
 //C Headers
 #include <stdio.h>
 
-#define DEBUG 1
+// #define DEBUG 1
 
 //Debug Headers
 #ifdef DEBUG
